@@ -3,92 +3,135 @@ import { useState } from 'react';
 import { databases, DATABASE_ID, COLLECTION_ID } from './lib/appwrite';
 import { ID } from 'appwrite';
 
-export default function AuraPro() {
+export default function AuraOSFull() {
+  // Authentication State
   const [phone, setPhone] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Audit Feature State
+  const [taxData, setTaxData] = useState('');
+  const [auditResult, setAuditResult] = useState('');
+  const [isAuditing, setIsAuditing] = useState(false);
+
+  // 1. FUNGSI LOGIN & DATABASE SYNC
   const handleLogin = async () => {
-    if (!phone) return alert("Mohon masukkan nomor WhatsApp Anda.");
+    if (!phone) return alert("Masukkan nomor WhatsApp!");
     setLoading(true);
     try {
-      await databases.createDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        ID.unique(),
-        {
-          recordid: Math.floor(Math.random() * 100000),
-          description: `Koneksi Klien: ${phone}`,
-          changetype: "SINKRONISASI_USER",
-          result: `Sistem berhasil mengamankan jalur audit untuk klien ${phone}.`
-        }
-      );
-      alert("Koneksi Berhasil! Data Anda telah tersinkronisasi di AuraStorage.");
+      await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
+        recordid: Math.floor(Math.random() * 100000),
+        description: `Login Klien: ${phone}`,
+        changetype: "USER_LOGIN",
+        result: "Sesi Audit Dimulai"
+      });
+      setIsLoggedIn(true);
     } catch (error: any) {
-      console.error(error);
-      alert("Gagal terhubung. Pastikan konfigurasi Platform di Appwrite sudah sesuai.");
+      alert("Error: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center font-sans overflow-hidden">
-      {/* GLOW DECORATION */}
-      <div className="fixed -top-24 -left-24 w-96 h-96 bg-blue-600/10 blur-[100px] rounded-full" />
-      <div className="fixed -bottom-24 -right-24 w-96 h-96 bg-indigo-600/10 blur-[100px] rounded-full" />
+  // 2. FUNGSI ENGINE AI AUDIT
+  const handleRunAudit = async () => {
+    if (!taxData) return alert("Masukkan data pajak!");
+    setIsAuditing(true);
+    try {
+      // Simulasi Analisis Llama 3.3
+      const analysis = `HASIL AUDIT AURA OS: Data "${taxData}" menunjukkan indikasi hutang pajak yang perlu direstrukturisasi. Rekomendasi: Gunakan skema cicilan PPh Pasal 25.`;
+      
+      await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
+        recordid: Math.floor(Math.random() * 100000),
+        description: `Audit Pajak Klien: ${phone}`,
+        changetype: "TAX_REPORT",
+        result: analysis
+      });
 
-      <main className="w-full max-w-md px-8 pt-24 flex flex-col gap-10 z-10">
-        {/* BRANDING */}
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
-            Aura OS <span className="text-blue-500 lowercase not-italic">v1</span>
-          </h1>
-          <p className="text-[10px] text-gray-500 font-mono tracking-[0.3em] uppercase">Professional Audit Infrastructure</p>
-        </div>
+      setAuditResult(analysis);
+    } catch (error: any) {
+      alert("Gagal simpan audit: " + error.message);
+    } finally {
+      setIsAuditing(false);
+    }
+  };
 
-        {/* INPUT CARD */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-[35px] p-8 backdrop-blur-md shadow-2xl">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2 text-blue-50">Audit Jasa Pajak</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Hubungkan nomor Anda untuk sinkronisasi data dengan sistem <span className="text-blue-400">AuraStorage</span>.
-            </p>
+  // --- UI HANDLER ---
+
+  // TAMPILAN DASHBOARD (SETELAH LOGIN)
+  if (isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white p-6 font-sans">
+        <div className="max-w-md mx-auto space-y-8">
+          <header className="flex justify-between items-center py-4 border-b border-white/10">
+            <h1 className="text-xl font-black italic tracking-tighter text-blue-500">AURA PRO OS</h1>
+            <span className="text-[10px] font-mono text-gray-500 uppercase">User: {phone}</span>
+          </header>
+
+          <div className="space-y-6">
+            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-4">
+              <h2 className="text-lg font-bold">Input Laporan Pajak</h2>
+              <textarea 
+                value={taxData}
+                onChange={(e) => setTaxData(e.target.value)}
+                placeholder="Masukkan rincian hutang pajak Anda di sini..."
+                className="w-full bg-black border border-white/10 rounded-2xl p-4 text-sm font-mono h-40 outline-none focus:border-blue-500 transition-all"
+              />
+              <button 
+                onClick={handleRunAudit}
+                disabled={isAuditing}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all disabled:opacity-50"
+              >
+                {isAuditing ? 'AI ANALYZING...' : 'JALANKAN AUDIT AI'}
+              </button>
+            </div>
+
+            {auditResult && (
+              <div className="bg-blue-600/20 border border-blue-500/30 rounded-3xl p-6 space-y-2 animate-pulse">
+                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest">Llama 3.3 Analysis Report:</h3>
+                <p className="text-sm leading-relaxed">{auditResult}</p>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          <div className="space-y-4">
+  // TAMPILAN GATEWAY (SEBELUM LOGIN)
+  return (
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-8">
+      <div className="w-full max-w-md space-y-10">
+        <div className="text-center space-y-2">
+          <h1 className="text-5xl font-black italic tracking-tighter">AURA OS</h1>
+          <p className="text-gray-500 text-[9px] uppercase tracking-[0.6em]">Professional Tax Auditor</p>
+        </div>
+        
+        <div className="bg-white/[0.02] border border-white/10 rounded-[40px] p-8 space-y-6 backdrop-blur-3xl shadow-2xl">
+          <div className="space-y-2">
+            <label className="text-[10px] text-gray-600 uppercase font-bold ml-2">WhatsApp Access</label>
             <input 
               type="text" 
-              placeholder="08xxxxxxxxxx" 
+              placeholder="08123456789" 
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl py-4 px-6 text-white focus:border-blue-500/50 outline-none transition-all font-mono"
+              className="w-full bg-black/50 border border-white/10 rounded-2xl py-5 px-6 outline-none focus:border-blue-500 transition-all text-center text-xl font-mono"
             />
-            <button 
-              onClick={handleLogin}
-              disabled={loading}
-              className="w-full bg-white text-black font-black py-4 rounded-2xl active:scale-95 transition-transform hover:bg-blue-500 hover:text-white disabled:bg-gray-800"
-            >
-              {loading ? 'MENYAMBUNGKAN...' : 'MULAI SINKRONISASI'}
-            </button>
           </div>
+          <button 
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full bg-white text-black font-black py-5 rounded-2xl active:scale-95 transition-all text-lg hover:bg-blue-500 hover:text-white"
+          >
+            {loading ? 'SYNCING...' : 'MASUK KE SISTEM'}
+          </button>
         </div>
 
-        {/* SYSTEM STATUS */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
-            <span className="block text-[8px] text-gray-500 uppercase tracking-widest mb-1">Project ID</span>
-            <span className="text-[10px] font-mono text-blue-400">aura-os-tax-debt-plan</span>
-          </div>
-          <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
-            <span className="block text-[8px] text-gray-500 uppercase tracking-widest mb-1">Database</span>
-            <span className="text-[10px] font-mono text-blue-400">DatabaseAura</span>
-          </div>
+        <div className="flex justify-between px-4 opacity-20">
+          <span className="text-[8px] font-mono uppercase tracking-widest">Project: aura-os-tax-debt-plan</span>
+          <span className="text-[8px] font-mono uppercase tracking-widest">Db: DatabaseAura</span>
         </div>
-      </main>
-
-      <footer className="mt-auto pb-10 opacity-20">
-        <p className="text-[8px] font-mono uppercase tracking-[0.5em]">Securely Processed by Llama 3.3</p>
-      </footer>
+      </div>
     </div>
   );
 }
