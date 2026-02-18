@@ -1,26 +1,46 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg: #000000;
+  --card: #111111;
+  --accent: #007AFF;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: #ffffff;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+.glass-card {
+  background: var(--card);
+  border: 1px solid #222;
+  border-radius: 32px;
+}
+
+.input-neural {
+  background: #1c1c1e;
+  border-radius: 18px;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  outline: none;
+  color: white;
+  font-weight: 600;
+}
+
+.btn-neural {
+  background: #ffffff;
+  color: #000000;
+  padding: 20px;
+  border-radius: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  transition: all 0.2s;
+}
+
+.btn-neural:active { transform: scale(0.96); }
